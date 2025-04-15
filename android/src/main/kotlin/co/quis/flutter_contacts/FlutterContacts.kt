@@ -317,6 +317,24 @@ class FlutterContacts {
                     }
                 }
 
+                if (withPhoto) {
+                    val contactUri: Uri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id.toLong())
+                    val displayPhotoUri: Uri = Uri.withAppendedPath(contactUri, Contacts.Photo.DISPLAY_PHOTO)
+                    try {
+                        var fis: InputStream? = resolver.openInputStream(displayPhotoUri)
+                        contact.photo = fis?.readBytes()
+                    } catch (e: FileNotFoundException) {
+                        // This happens when no high-resolution photo exists, and is
+                        // a common situation.
+                    }
+                }
+
+                val mimetype = getString(cursor, Data.MIMETYPE)
+
+                if (withThumbnail && mimetype == Photo.CONTENT_ITEM_TYPE) {
+                    contact.thumbnail = getBlob(cursor, Photo.PHOTO)
+                }
+
                 contact.phones = phoneNumbers
 
                 contacts.add(contact)
