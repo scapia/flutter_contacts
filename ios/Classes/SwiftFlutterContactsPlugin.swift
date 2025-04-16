@@ -93,7 +93,8 @@ public enum FlutterContacts {
         returnUnifiedContacts: Bool,
         includeNotesOnIos13AndAbove: Bool,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        searchQuery: String? = nil
     ) -> [[String: Any?]] {
         let store = CNContactStore()
 
@@ -134,8 +135,18 @@ public enum FlutterContacts {
         }
 
         // Perform pagination on cached contacts
+        let filteredContacts: [CNContact]
+        if(searchQuery != nil && searchQuery != "") {
+            filteredContacts = cachedContacts.filter { contact in
+                let name = CNContactFormatter.string(from: contact, style: .fullName) ?? ""
+                return name.lowercased().contains(searchQuery?.lowercased() ?? "")
+            }
+        } else {
+            filteredContacts = cachedContacts
+        }
+
         let offset = page * pageSize
-        let paginatedContacts = cachedContacts.dropFirst(offset).prefix(pageSize)
+        let paginatedContacts = filteredContacts.dropFirst(offset).prefix(pageSize)
 
         var contacts = paginatedContacts.map { Contact(fromContact: $0) }
 
@@ -501,6 +512,7 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                 let returnUnifiedContacts = args[6] as! Bool
                 // args[7] = includeNonVisibleOnAndroid
                 let includeNotesOnIos13AndAbove = args[8] as! Bool
+                let searchQuery = args[9] as? String
                 let page = args[10] as? Int ?? 0
                 let pageSize = args[11] as? Int ?? 0
                 let contacts = FlutterContacts.select(
@@ -513,7 +525,8 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                     returnUnifiedContacts: returnUnifiedContacts,
                     includeNotesOnIos13AndAbove: includeNotesOnIos13AndAbove,
                     page: page,
-                    pageSize: pageSize
+                    pageSize: pageSize,
+                    searchQuery: searchQuery
                 )
                 result(contacts)
             }
