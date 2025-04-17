@@ -100,7 +100,7 @@ public enum FlutterContacts {
 
         // Populate cache if not already populated
         if !isCachePopulated {
-            cachedContacts = selectInternal(
+            let fetchedContacts = selectInternal(
                 store: store,
                 id: nil, // Fetch all contacts for caching
                 withProperties: withProperties,
@@ -111,7 +111,7 @@ public enum FlutterContacts {
             )
 
             // Sort cached contacts by display name
-            cachedContacts.sort {
+            cachedContacts = fetchedContacts.sorted {
                 let name1 = CNContactFormatter.string(from: $0, style: .fullName) ?? ""
                 let name2 = CNContactFormatter.string(from: $1, style: .fullName) ?? ""
                 return name1 < name2
