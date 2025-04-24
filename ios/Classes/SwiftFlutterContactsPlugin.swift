@@ -145,8 +145,13 @@ public enum FlutterContacts {
             filteredContacts = cachedContacts
         }
 
-        let offset = page * pageSize
-        let paginatedContacts = filteredContacts.dropFirst(offset).prefix(pageSize)
+        var paginatedContacts: [CNContact] = []
+        if(pageSize > 0){
+            let offset = page * pageSize
+            paginatedContacts = Array(filteredContacts.dropFirst(offset).prefix(pageSize))
+        } else {
+            paginatedContacts = filteredContacts;
+        }
 
         var contacts = paginatedContacts.map { Contact(fromContact: $0) }
 
